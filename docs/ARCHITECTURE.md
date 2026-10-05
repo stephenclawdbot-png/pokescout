@@ -1,36 +1,20 @@
-# PokéScout architecture
+# Architecture
 
-PokéScout is a market-intelligence desk for the Pokémon TCG, not a price tracker. It ranks cards by how much proven demand exists relative to sellable supply, and it never treats a score as a price forecast.
+```
+scripts/ingest.mjs ──► public/data/market.json        (all cards, current prices + moves)
+   ▲                └► public/data/history/<set>.json (daily USD snapshots)
+   │
+   ├─ pokemontcg.io  /v2/cards (bulk, 250/page): universe, set metadata, images, TCGplayer prices
+   └─ TCGdex /v2/en/cards/<id> (per card): Cardmarket avg1/avg7/avg30/trend
+                                                      │
+app/page.tsx → components/Terminal.tsx  ◄── fetch ────┘   (client-side: decode, aggregate, render)
+```
 
-## Pipeline
+- **Ingest** runs nightly in GitHub Actions. It refuses to publish if pokemontcg.io returns < 98% of cards, so a flaky night leaves yesterday's data in place. If TCGdex fails, the run still publishes USD data without EUR momentum.
+- **Join**: TCGdex sets are matched to pokemontcg.io sets by normalized name (closest release date breaks ties), then cards by normalized number. Cardmarket blocks older than 7 days are dropped.
+- **Printing**: one row per card. The TCGplayer price uses the main printing (holo → normal → unlimited → 1st edition → reverse).
+- **Client**: `lib/market.ts` decodes the compact row format and computes derived fields (EU 1D/7D, trend agreement, US/EU gap), indices, breadth, and set/Pokémon aggregates. The screener is a hand-rolled virtualized grid, so all ~20k rows stay interactive.
 
-1. Ingest marketplace observations (listings, solds, removals) with a source label.
-2. Normalize identity: SET + CARD NUMBER + LANGUAGE + VARIANT + PRINT + CONDITION + GRADING COMPANY + GRADE.
-3. Deduplicate the same physical card across relists when seller, images, and timestamps allow it.
-4. Snapshot populations (PSA / CGC / BGS) on a daily cadence.
-5. Compute velocity, absorption, listing-wall, cross-market, and population features.
-6. Score: Demand, Scarcity, Liquidity, Collector Appeal, Accumulation, Breakout, Risk.
-7. Assign momentum stage 0–6.
-8. Emit alerts only for Stage 1, Stage 2, and early Stage 3.
-9. Backtest signals on reconstructed historical states before any alert is treated as live.
+## Not built yet
 
-## Data quality labels
-
-Every number rendered in the product must carry one of:
-
-- LIVE DATA — official or permitted feed, current window
-- DELAYED DATA — licensed or public feed older than the source SLA
-- ESTIMATED DATA — fixture, interpolation, or incomplete coverage
-- MODEL-INFERRED DATA — score, stage, analogue, or probability
-
-The v1 catalog in `lib/catalog.ts` is ESTIMATED. Scores computed from it are MODEL-INFERRED. Do not present them as market prices.
-
-## Obsession metric
-
-Demand acceleration / available-supply acceleration.
-
-If transactions are rising while sellable inventory is contracting, and price has only moved modestly, that is the setup. A vertical price candle with falling volume is late, not early.
-
-## What is not built yet
-
-Marketplace connectors, population crawlers, historical backtests, portfolio storage, and real-time alerts. Those wait until a source is both legally usable and technically stable.
+Graded (PSA/CGC/BGS) prices and population, Japanese cards, per-printing rows (reverse holo / 1st edition as separate tickers), sold-volume and listing-depth signals, alerts. The data-source notes in `DATA_SOURCES.md` list what each would need.

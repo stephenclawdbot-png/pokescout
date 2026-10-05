@@ -1,27 +1,17 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
-  title: "PokéScout",
-  description: "Pokémon card scout with real card art and delayed market guides.",
+  title: "PokéScout Terminal",
+  description: "Market terminal for every English Pokémon card: prices, movers, set and Pokémon indices.",
 };
+
+export const viewport: Viewport = { themeColor: "#000000" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <div className="shell">
-          <header className="topbar">
-            <div className="brand">POKÉSCOUT</div>
-            <nav>
-              <a href="/">Board</a>
-              <a href="/feed">Feed</a>
-              <a href="/scanner">Scanner</a>
-            </nav>
-          </header>
-          {children}
-        </div>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

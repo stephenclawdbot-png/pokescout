@@ -1,3 +1,3 @@
 export function GET() {
-  return Response.json({ ok: true, service: "pokescout", data: "ESTIMATED" });
+  return Response.json({ ok: true, service: "pokescout" });
 }

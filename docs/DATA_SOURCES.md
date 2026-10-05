@@ -1,5 +1,18 @@
 # Data sources and limits
 
+## Used today
+
+| Feed | Source | Refresh | Notes |
+| --- | --- | --- | --- |
+| Card universe, sets, images, TCGplayer USD (market / low) | pokemontcg.io `/v2/cards` | daily | ~20.7k English cards. The API throws random 500/502s; the ingest retries and splits pages. |
+| Cardmarket EUR (trend, avg1, avg7, avg30, low) | TCGdex `/v2/en/cards/<id>` | daily | pokemontcg.io's own Cardmarket block is months stale, so it is not used. TCGdex has no prices for some promos and newest sets. |
+| USD history | PokéScout snapshots | daily | Starts on the first ingest. US 1D / 7D / 30D appear as it accrues. |
+| EUR→USD | open.er-api.com | daily | Used for the US/EU gap only. |
+
+Known gaps: Cardmarket averages mix all conditions, so cheap cards are noisy (the movers panel uses a price floor plus a trend-agreement filter). Japanese cards, graded prices and sold volume are not in any free feed above.
+
+## Landscape
+
 Do not scrape every marketplace on a short interval. Prefer official APIs, permitted delayed feeds, and third-party datasets. If a source is blocked or ToS-hostile, leave the field empty and label it missing.
 
 | Source | Access | What it can honestly provide | Label |
