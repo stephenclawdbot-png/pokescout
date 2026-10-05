@@ -143,8 +143,14 @@ function matchSets(ptcg, dex) {
     if (!byName.has(k)) byName.set(k, []);
     byName.get(k).push(s);
   }
+  const ptcgIds = new Set(ptcg.map((s) => s.id));
   const map = new Map(); // tcgdex set id -> ptcg set id
   for (const d of dex) {
+    // Older sets share ids across both APIs (base1, hgss1, bwp…) even where names differ ("Base" vs "Base Set").
+    if (ptcgIds.has(d.id)) {
+      map.set(d.id, d.id);
+      continue;
+    }
     const cands = byName.get(normName(d.name));
     if (!cands?.length) continue;
     const dDate = d.releaseDate ? Date.parse(d.releaseDate) : NaN;

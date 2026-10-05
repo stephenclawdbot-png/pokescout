@@ -11,9 +11,9 @@ app/page.tsx → components/Terminal.tsx  ◄── fetch ────┘   (cli
 ```
 
 - **Ingest** runs nightly in GitHub Actions. It refuses to publish if pokemontcg.io returns < 98% of cards, so a flaky night leaves yesterday's data in place. If TCGdex fails, the run still publishes USD data without EUR momentum.
-- **Join**: TCGdex sets are matched to pokemontcg.io sets by normalized name (closest release date breaks ties), then cards by normalized number. Cardmarket blocks older than 7 days are dropped.
+- **Join**: TCGdex sets are matched to pokemontcg.io sets by identical id, else by normalized name (closest release date breaks ties), then cards by normalized number. Cardmarket blocks older than 7 days are dropped.
 - **Printing**: one row per card. The TCGplayer price uses the main printing (holo → normal → unlimited → 1st edition → reverse).
-- **Client**: `lib/market.ts` decodes the compact row format and computes derived fields (EU 1D/7D, trend agreement, US/EU gap), indices, breadth, and set/Pokémon aggregates. The screener is a hand-rolled virtualized grid, so all ~20k rows stay interactive.
+- **Client**: `lib/market.ts` decodes the compact row format and computes derived fields (EU 1D/7D, trend agreement, US/EU gap), median-move indices, breadth, and set/Pokémon aggregates. The screener is a hand-rolled virtualized grid, so all ~20k rows stay interactive.
 
 ## Not built yet
 

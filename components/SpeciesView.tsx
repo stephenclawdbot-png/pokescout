@@ -86,7 +86,7 @@ export function SpeciesView({ market, basis, onDrill, onOpen }: { market: Market
           </tbody>
         </table>
       </div>
-      <div className="foot">Each Pokémon's index = every card featuring it (by National Pokédex number), price-weighted. MOVE = {BASIS_LABEL[basis]}. Click to screen all its cards.</div>
+      <div className="foot">Each Pokémon's index = every card featuring it (by National Pokédex number); MOVE is the median card move ({BASIS_LABEL[basis]}). Click to screen all its cards.</div>
     </section>
   );
 }

@@ -60,7 +60,7 @@ export function SetsView({ market, basis, onDrill }: { market: Market; basis: Ba
                 <td className="muted">{s.set.series}</td>
                 <td className="muted">{s.set.release}</td>
                 <td className="num">{s.cards}</td>
-                <td className="num">{money(s.value)}</td>
+                <td className="num">{money(s.priced ? s.value : null)}</td>
                 <td className="num"><Pct v={s.move} /></td>
                 <td className="num">
                   <span className="up">{s.up}</span> / <span className="down">{s.down}</span>

@@ -23,7 +23,7 @@ The **MOVE BASIS** switch in the tab bar picks the signal used everywhere:
 - **EU7D** (available from day one): Cardmarket 7-day average sell price vs its 30-day average. "Confirmed" means Cardmarket's trend price agrees in direction.
 - **US1D / US7D / US30D**: change in TCGplayer market price, from PokéScout's own daily snapshots. These appear once enough history exists (2, 6 and 27 days). The default switches to US7D automatically once it's available.
 
-Indices are price-weighted: they show how much a basket holding one copy of each card moved.
+Indices, sets, eras and Pokémon show the **median** card move, so one thin card with a spike can't drag a whole set. Breadth bars show how many cards are up vs down.
 
 ## Data
 

@@ -147,3 +147,10 @@ button, input, select { font: inherit; color: inherit; }
 
 .loading { padding: 40px; color: var(--muted); }
 .close { background: none; border: 1px solid var(--line-2); color: var(--muted); cursor: pointer; padding: 1px 8px; }
+@media (max-width: 700px) {
+  .topbar { gap: 6px 10px; }
+  .stats { order: 3; flex-basis: 100%; gap: 2px 12px; }
+  .cmd { flex: 1; min-width: 0; }
+  .heat-series { flex-direction: column; gap: 2px; }
+  .heat-series .lbl { width: auto; }
+}

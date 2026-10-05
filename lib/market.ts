@@ -51,6 +51,7 @@ export type Card = {
   euTrend: number | null; // Cardmarket trend vs avg30
   spread: number | null; // TCGplayer USD vs Cardmarket trend (USD) — positive = US richer
   confirmed: boolean; // avg7 and trend both moved the same direction vs avg30
+  euClean: boolean; // confirmed, and both averages sit within 1.75× of the US price (filters condition-mix noise)
 };
 
 export type Market = {
@@ -91,6 +92,11 @@ export function decode(raw: RawMarket): Market {
     const usd = num(r, "usd");
     const eu7d = pct(eurAvg7, eurAvg30);
     const euTrend = pct(eurTrend, eurAvg30);
+    const confirmed = eu7d != null && euTrend != null && Math.sign(eu7d) === Math.sign(euTrend);
+    const near = (eur: number | null) => eur != null && usd != null && eur * fx > usd / 1.75 && eur * fx < usd * 1.75;
+    const eurUsd = eurTrend != null ? eurTrend * fx : null;
+    // Beyond 4× apart the two markets are almost always pricing different printings, not a real gap.
+    const comparable = usd != null && eurUsd != null && usd / eurUsd < 4 && eurUsd / usd < 4;
     return {
       id: str(r, "id"),
       name: str(r, "name"),
@@ -116,8 +122,9 @@ export function decode(raw: RawMarket): Market {
       eu1d: pct(eurAvg1, eurAvg7),
       eu7d,
       euTrend,
-      spread: usd != null && eurTrend != null ? pct(usd, eurTrend * fx) : null,
-      confirmed: eu7d != null && euTrend != null && Math.sign(eu7d) === Math.sign(euTrend),
+      spread: comparable ? pct(usd, eurUsd) : null,
+      confirmed,
+      euClean: confirmed && near(eurAvg7) && near(eurAvg30),
     };
   });
   return {
@@ -137,14 +144,16 @@ export function decode(raw: RawMarket): Market {
 export type Basis = "eu7d" | "us1d" | "us7d" | "us30d";
 
 export const BASIS_LABEL: Record<Basis, string> = {
-  eu7d: "7D · Cardmarket avg7 vs avg30",
+  eu7d: "7D · Cardmarket avg7 vs avg30, cross-checked",
   us1d: "1D · TCGplayer market",
   us7d: "7D · TCGplayer market",
   us30d: "30D · TCGplayer market",
 };
 
+// The move used for rankings, indices and breadth. EU moves only count when cross-checked (euClean);
+// the raw Cardmarket figures stay visible in the screener columns.
 export function change(c: Card, b: Basis): number | null {
-  if (b === "eu7d") return c.eu7d;
+  if (b === "eu7d") return c.euClean ? c.eu7d : null;
   if (b === "us1d") return c.usd1d;
   if (b === "us7d") return c.usd7d;
   return c.usd30d;
@@ -162,25 +171,20 @@ export function defaultBasis(m: Market): Basis {
   return m.historyDays >= 6 ? "us7d" : "eu7d";
 }
 
-// Price-weighted index move: how much a basket holding one of each card moved.
+// Median move across the basket. A price-weighted sum gets dragged around by one or two
+// thin, expensive cards (a single high-grade sale moves a vintage holo's 7-day average 2×),
+// so every index, set, era and Pokémon move is the median card move instead.
 export function indexMove(cards: Card[], b: Basis): { pct: number | null; n: number } {
-  let now = 0;
-  let then = 0;
-  let n = 0;
+  const moves: number[] = [];
   for (const c of cards) {
-    if (b === "eu7d") {
-      if (c.eurAvg7 == null || c.eurAvg30 == null) continue;
-      now += c.eurAvg7;
-      then += c.eurAvg30;
-    } else {
-      const ch = change(c, b);
-      if (ch == null || c.usd == null) continue;
-      now += c.usd;
-      then += c.usd / (1 + ch / 100);
-    }
-    n++;
+    const ch = change(c, b);
+    if (ch != null) moves.push(ch);
   }
-  return { pct: then > 0 ? Math.round((now / then - 1) * 1000) / 10 : null, n };
+  if (!moves.length) return { pct: null, n: 0 };
+  moves.sort((x, y) => x - y);
+  const mid = moves.length >> 1;
+  const med = moves.length % 2 ? moves[mid] : (moves[mid - 1] + moves[mid]) / 2;
+  return { pct: Math.round(med * 10) / 10, n: moves.length };
 }
 
 export function breadth(cards: Card[], b: Basis, band = 2) {

@@ -11,7 +11,7 @@ const MIN_PRICES = [1, 5, 25, 100];
 
 export function Overview({ market, basis, onOpen, onDrill }: Props) {
   const [minPrice, setMinPrice] = useState(5);
-  const [confirmedOnly, setConfirmedOnly] = useState(true);
+  const [scope, setScope] = useState("all");
   const [tip, setTip] = useState<{ x: number; y: number; s: SetAgg } | null>(null);
 
   const liquid = useMemo(() => market.cards.filter((c) => (c.price ?? 0) >= 1), [market]);
@@ -29,18 +29,16 @@ export function Overview({ market, basis, onOpen, onDrill }: Props) {
   }, [liquid, basis]);
 
   const movers = useMemo(() => {
+    const era = ERAS.find((e) => e.key === scope);
     const pool = market.cards.filter((c) => {
       if ((c.price ?? 0) < minPrice) return false;
       if (change(c, basis) == null) return false;
-      if (basis === "eu7d") {
-        if (confirmedOnly && !c.confirmed) return false;
-        if ((c.eurAvg30 ?? 0) < 0.5) return false;
-      }
+      if (era && !era.series.includes(c.set.series)) return false;
       return true;
     });
     const sorted = pool.sort((a, b) => change(b, basis)! - change(a, basis)!);
     return { up: sorted.slice(0, 15), down: sorted.slice(-15).reverse() };
-  }, [market, basis, minPrice, confirmedOnly]);
+  }, [market, basis, minPrice, scope]);
 
   const sets = useMemo(() => aggregateSets(market, basis), [market, basis]);
   const heatRows = useMemo(() => {
@@ -124,7 +122,7 @@ export function Overview({ market, basis, onOpen, onDrill }: Props) {
           ))}
         </div>
         <div className="foot">
-          Tile size = cost of one copy of every card in the set. Colour = price-weighted move ({BASIS_LABEL[basis]}). Click a set to open it in the screener.
+          Tile size = cost of one copy of every card in the set. Colour = median card move ({BASIS_LABEL[basis]}). Click a set to open it in the screener.
         </div>
         {tip && (
           <div className="tip" style={{ left: Math.min(tip.x + 14, window.innerWidth - 290), top: tip.y + 14 }}>
@@ -156,15 +154,21 @@ export function Overview({ market, basis, onOpen, onDrill }: Props) {
                 ≥${p}
               </button>
             ))}
-            {basis === "eu7d" && (
-              <button className={`chip${confirmedOnly ? " on" : ""}`} onClick={() => setConfirmedOnly((v) => !v)} title="Only cards where Cardmarket trend agrees with the 7-day average">
-                CONFIRMED
-              </button>
-            )}
+            <select className="chip" value={scope} onChange={(e) => setScope(e.target.value)} aria-label="era">
+              <option value="all">ALL ERAS</option>
+              {ERAS.map((e) => (
+                <option key={e.key} value={e.key}>{e.label}</option>
+              ))}
+            </select>
           </div>
         </div>
         <MoverTable title="GAINERS" cards={movers.up} basis={basis} onOpen={onOpen} />
         <MoverTable title="LOSERS" cards={movers.down} basis={basis} onOpen={onOpen} />
+        {basis === "eu7d" && (
+          <div className="foot">
+            Moves are 7D vs 30D Cardmarket averages. They count only when Cardmarket's trend agrees and its 7D/30D averages sit within 1.75× of the US price. Averages mix conditions, so thin vintage cards still swing on a few sales. US moves from daily snapshots take over after a week.
+          </div>
+        )}
       </section>
 
       <section className="panel span-4">
@@ -202,7 +206,7 @@ export function Overview({ market, basis, onOpen, onDrill }: Props) {
             ))}
           </tbody>
         </table>
-        <div className="foot">Positive = TCGplayer (US) is richer than Cardmarket (EU) trend. Cards ≥ $20. Mixed conditions on Cardmarket inflate some gaps.</div>
+        <div className="foot">Positive = TCGplayer (US) is richer than Cardmarket (EU) trend. Cards ≥ $20. Pairs more than 4× apart are hidden (usually different printings). Mixed conditions on Cardmarket inflate some gaps.</div>
       </section>
 
       <section className="panel span-4">

@@ -97,7 +97,7 @@ export function CardDrawer({ market, card: c, basis, onClose, onOpen, watched, t
               </span>
               <span className="k">EU 1D / 7D</span>
               <span>
-                <Pct v={c.eu1d} /> / <Pct v={c.eu7d} /> {c.eu7d != null && <span className="dim">{c.confirmed ? "trend agrees" : "trend disagrees"}</span>}
+                <Pct v={c.eu1d} /> / <Pct v={c.eu7d} /> {c.eu7d != null && <span className="dim">{c.euClean ? "cross-checked" : c.confirmed ? "EU/US prices disagree" : "trend disagrees"}</span>}
               </span>
               <span className="k">US vs EU</span>
               <span>

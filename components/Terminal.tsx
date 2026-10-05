@@ -111,7 +111,7 @@ export function Terminal() {
   const tape = useMemo(() => {
     if (!market) return [];
     return market.cards
-      .filter((c) => (c.price ?? 0) >= 10 && change(c, basis) != null && (basis !== "eu7d" || c.confirmed))
+      .filter((c) => (c.price ?? 0) >= 10 && change(c, basis) != null)
       .sort((a, b) => Math.abs(change(b, basis)!) - Math.abs(change(a, basis)!))
       .slice(0, 40);
   }, [market, basis]);
