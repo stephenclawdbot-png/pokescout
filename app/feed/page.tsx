@@ -6,23 +6,23 @@ export default async function FeedPage() {
   const feed = await delayedFeed();
   return (
     <main>
-      <div className="k">DELAYED DATA · TCGPlayer market guide · pokemontcg.io · cached 1h</div>
-      <p className="k">This is a price guide, not a sold tape. No volume, no inventory absorption, no PSA population. Cardmarket on this source can lag; only the TCGPlayer block is shown.</p>
-      {feed.error && <p className="k">Partial: {feed.error}</p>}
-      <section className="panel" style={{ marginTop: 12 }}>
+      <section className="hero">
+        <h1>Delayed guide feed</h1>
+        <p>TCGdex official art plus TCGPlayer market prices. Not eBay sold velocity. JSON at /api/feed.</p>
+      </section>
+      {feed.error && <p className="fine">Partial: {feed.error}</p>}
+      <section className="board">
         {feed.rows.map((row) => (
-          <div className="row" key={row.id}>
-            <span>
-              {row.name}
-              <div className="k">{row.set} #{row.number} · {row.variant} · updated {row.updatedAt ?? "unknown"}</div>
-            </span>
-            <span>
-              {row.market != null ? `$${row.market}` : "no market"}
-              <div className="k">low {row.low != null ? `$${row.low}` : "—"} · DELAYED</div>
-            </span>
-          </div>
+          <article className="card" key={row.id}>
+            {row.image ? <img src={row.image} alt={row.name} /> : null}
+            <div className="meta">
+              <span className="badge">DELAYED</span>
+              <h2>{row.name}</h2>
+              <div className="price">{row.market != null ? `$${row.market}` : "no market"}</div>
+              <div className="fine">{row.set} · {row.updatedAt ?? "unknown"}</div>
+            </div>
+          </article>
         ))}
-        {feed.rows.length === 0 && <p>Feed empty. The upstream API did not return cards.</p>}
       </section>
     </main>
   );

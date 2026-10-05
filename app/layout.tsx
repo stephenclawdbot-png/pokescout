@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "PokéScout",
-  description: "Pokémon TCG market intelligence. Demand versus available supply.",
+  description: "Pokémon card scout with real card art and delayed market guides.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -12,9 +12,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <div className="shell">
           <header className="topbar">
-            <div className="brand">POKESCOUT // MARKET INTELLIGENCE</div>
+            <div className="brand">POKÉSCOUT</div>
             <nav>
-              <a href="/">Terminal</a> · <a href="/feed">Delayed feed</a> · <a href="/scanner">Scanner</a>
+              <a href="/">Board</a>
+              <a href="/feed">Feed</a>
+              <a href="/scanner">Scanner</a>
             </nav>
           </header>
           {children}
