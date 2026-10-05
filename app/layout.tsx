@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "PokéScout",
-  description: "Pokémon TCG market intelligence. Demand vs available supply, not a price tracker.",
+  description: "Pokémon TCG market intelligence. Demand versus available supply.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <header className="topbar">
             <div className="brand">POKESCOUT // MARKET INTELLIGENCE</div>
             <nav>
-              <a href="/">Terminal</a> · <a href="/scanner">Scanner</a>
+              <a href="/">Terminal</a> · <a href="/feed">Delayed feed</a> · <a href="/scanner">Scanner</a>
             </nav>
           </header>
           {children}
